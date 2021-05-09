@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Button, ScrollView, StyleSheet, Text, TextInput, View, TouchableOpacity } from 'react-native';
 
 export default function HelloWorldInput() {
     // Hooks-muuttujia:
@@ -12,7 +12,7 @@ export default function HelloWorldInput() {
     // Funktio, jota button kutsuu ja changeOutputname päivittää sen outputNameen ja setArray lisää sen taulukkoon. \n on rivinvaihto
     const showName = (name: string) => {
         changeOutputName(name);
-        setArray(array => [...array, '\n' + name])
+        setArray(array => [...array, name + '\n' ])
     }
 
     setTimeout(
@@ -29,24 +29,30 @@ export default function HelloWorldInput() {
             <View>
                 <Text style={styles.bigCentered}>{counter}</Text>
             </View>
-            <View>
+            <View style={styles.container3}>
                 <Text>Anna nimi:</Text>
                 {/* Textinput-kenttä, jolla on onChanteText event jota kuunnellaan, tallennetaan tieto nameen */}
                 {/* ja kutsutaan setNamea ja sen state päivittyy */}
                 <TextInput
-                    style = {{ height: 40, borderColor: 'gray', backgroundColor: 'white', padding: 4, borderWidth: 1, margin: 2,}}
+                    style = {{ height: 40, width: 120, borderColor: 'gray', backgroundColor: 'white', padding: 4, borderWidth: 1, margin: 2,}}
                     onChangeText={text => setName(text)}
                     value={name}
                 />
                 {/* button kutsuu funktiota showName, joka saa parametriksi namen joka asetetaan yllä */}
+                <View style={{ width: 120, }}>
                 <Button 
                     title="Lisää henkilö"
                     onPress={() => showName(name)}
                 />
+                </View>
+                <TouchableOpacity style={{ margin: 1, backgroundColor: 'gray' }} onPress={() => setArray([])}>
+                    <Text style={{ height: 40, width: 120, textAlign: 'center', fontSize: 18, textAlignVertical: 'center', padding: 1,
+                    borderWidth: 1, borderColor: 'gray' }}>Tyhjennä</Text>
+                </TouchableOpacity>
                 {/* <Text>{outputName}</Text> */}
                 {/* Tuodaan taulukko tähän */}
                 <ScrollView style={styles.scrollView} fadingEdgeLength={180}>
-                    <Text style= {{fontSize: 20}}>{array}</Text>
+                    <Text style= {{ textAlign: 'center', fontSize: 20 }}>{array}</Text>
                 </ScrollView>
             </View>
         </View> 
@@ -56,14 +62,20 @@ export default function HelloWorldInput() {
 // flex liittyy react nativen flexbox-rakenteeseen, jossa näyttö jaetaan kuuteen osaan
 const styles = StyleSheet.create({
     container2: {
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: 50,
+        width: '100%',
+        flex: 1,
+        alignItems: 'center',
+        padding: 1,
     },
+    container3: {
+        width: '100%',
+        flex: 1,
+        alignItems: 'center',
+        padding: 1,
+      },
     bigCentered: {
         color: 'blue',
-        fontSize: 36,
+        fontSize: 30,
         textAlign: 'center',
       },
       scrollView: {

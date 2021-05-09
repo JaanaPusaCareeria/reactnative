@@ -2,6 +2,7 @@ import React from 'react';
 import { Text, View, StyleSheet, Image, Platform, ScrollView } from 'react-native'
 import { API_id, API_key } from './APIKeyJHP';
 
+
 export default function YLETekstiTV100() {
     // Tämäm on ylen syntaksin mukainen
     var imageUrl = 'https://external.api.yle.fi/v1/teletext/images/' + 100 + '/1.png?app_id=' + API_id + '&app_key=' + API_key + "&date=" + Date.now.toString();

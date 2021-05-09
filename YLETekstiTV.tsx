@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Text, View, StyleSheet, Image, Platform, ScrollView, TextInput, Button, TouchableWithoutFeedbackBase } from 'react-native'
 import { API_id, API_key } from './APIKeyJHP';
+import { Octicons } from '@expo/vector-icons';
 
 export default function YLETekstiTV() {
     
@@ -16,15 +17,16 @@ export default function YLETekstiTV() {
                 <Text style={styles.title}>YLE TekstiTV pääsivu</Text>
                 <View style={styles.separatorLine}></View>
                 <View style={styles.searchSection}>
-                    <Button title="<<" onPress={() => changeInputPage(inputPage-1)} />
+                <Octicons name="triangle-left" size={40} color='black' onPress={() => changeInputPage(inputPage+1)} />
+                    {/* <Button title="<<" onPress={() => changeInputPage(inputPage-1)} /> */}
                     {/* changeInputPage vaihtaa inputPageen käyttäjän antaman numeron */}
                     <TextInput
                         style={{ height: 40, borderColor: 'gray', borderWidth: 1, backgroundColor: 'white', fontSize: 22, textAlign: 'center', margin: 2, width: 240 }}
                         onChangeText={(text) => changeInputPage(Number(text))}
                         value={inputPage.toString()}
                     />
-                    
-                    <Button title=">>" onPress={() => changeInputPage(inputPage+1)} />
+                    <Octicons name="triangle-right" size={40} color='black' onPress={() => changeInputPage(inputPage+1)} />
+                    {/* <Button title=">>" onPress={() => changeInputPage(inputPage+1)} /> */}
                 </View>
                 <View style={styles.imageSection}>
                     <Image
