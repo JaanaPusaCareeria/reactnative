@@ -35,7 +35,7 @@ const ProductEdit = (props: { passProductId: any, closeModal: any, refreshAfterE
     const [Discontinued, setDiscontinued] = useState(false)
     const [ImageLink, setImageLink] = useState('0');
     //HOX validaatio -jos ei mene läpi, tallenna-painike ei ole aktiivinen
-    let validaatio = true;
+    let validaatio = false;
 
     useEffect(() => {
         GetProductData();
@@ -131,6 +131,19 @@ const ProductEdit = (props: { passProductId: any, closeModal: any, refreshAfterE
         props.closeModal(true)
     }
 
+    //validointi
+    function priceValidation(price: string, field: string) {
+        //alert(price);
+        //alert(typeof(price));
+        if ((price == '') || (price === null) || (price.indexOf(',') > 0)) {
+            validaatio = false;
+            return false;
+        } else {
+            validaatio = true;
+            return true;
+        }
+    }
+
     //returnissa sitten input-kentät
     //styles-tiedoston muokkaukset käyty hakemassa valmiista koodista
     return (
@@ -170,9 +183,9 @@ const ProductEdit = (props: { passProductId: any, closeModal: any, refreshAfterE
                         autoCapitalize="none"
                         // kun tuotteen nimi-kenttää klikataan, se automaattisesti valitsee sen ja voi alkaa kirjoittaa
                         // uutta nimeä
-                        selectTextOnFocus={true}
-                        
+                        selectTextOnFocus={true}  
                     />
+                    { ProductName ? null: ( <Text style={styles.validationError}>Anna tuotteen nimi</Text>)}
 
                     <Text style={styles.inputTitle}>Hinta:</Text>
                     <TextInput style={styles.editInput}
@@ -186,6 +199,7 @@ const ProductEdit = (props: { passProductId: any, closeModal: any, refreshAfterE
                         keyboardType='numeric'
                         selectTextOnFocus={true}
                     />
+                    { priceValidation(UnitPrice, 'UnitPrice') == true ? null : ( <Text style={styles.validationError}>Anna hinta muodossa n.zz!</Text>)}
                     
                     <Text style={styles.inputTitle}>Varastossa:</Text>
                     <TextInput style={styles.editInput}
