@@ -4,7 +4,7 @@ import { FontAwesome5, Octicons } from '@expo/vector-icons'; //iconit käyttöö
 import styles from './styles/styles';
 import ProductDetails from './ProductDetails'
 import ProductEdit from './EditProduct'
-
+import {Picker} from '@react-native-picker/picker' //picker on dropdown-valikko
 
 interface INWProductsResponse {
     //Typescript -interface käytetään productItems -muuttujassa json
@@ -35,6 +35,8 @@ export default function NWTuotteetListModular() {
     {/*Tuotelistan päivityksen muuttujat*/ }
     const [refreshProducts, setRefreshProducts] = useState(false);
     const [refreshIndicator, setRefreshIndicator] = useState(false);
+    //Pickerin muuttuja
+    const [dropdownCategory, setDropdownCategory] = useState('All');
 
     // Kun pressablea painamalla refreshProductsin tila muuttuu trueksi, kun tämä state muuttuu, tämä useEffect laukeaa jolloin se kutsuu GetProductsia
     // joka hakee tuotteet ja asettaa refreshProductsin falseksi.
@@ -75,6 +77,17 @@ export default function NWTuotteetListModular() {
         setProductEditModal(!productEditModal);
     }
 
+    //dropdownin funktio suodattamiseen
+    function filterItems(category: string) {
+        if (category === 'All') {
+            setDropdownCategory('All');
+            setRefreshProducts(!refreshProducts);
+        } else if (category === 'cat1') {
+            setDropdownCategory('cat1');
+            setRefreshProducts(!refreshProducts);
+        }
+    }
+
 
     return (
         <View style={[ styles.mainWrapper ]}>
@@ -89,6 +102,19 @@ export default function NWTuotteetListModular() {
                     </View>
                 </Pressable>
                 <ActivityIndicator size="small" color="#0000ff" animating={refreshIndicator} />{/* ActivityIndicator aktivoituu refreshJsonData() -funktiossa ja se deaktivoidaan GetProducts() -funktiossa */}
+            </View>
+            {/* Picker-dropdown ylämenuun */}
+            <View style={[styles.pickerSection]}>
+                        <Picker
+                            selectedValue={dropdownCategory}
+                            style={{ height: 50, width: 250 }}
+                                prompt='Valitse tuoteryhmä'
+                                onValueChange={(itemValue, itemIndex) =>
+                                filterItems(itemValue.toString())
+                            }>
+                            <Picker.Item label="Hae kaikki tuoteryhmät" value="All" />
+                            <Picker.Item label="Juomat" value="cat1" />
+                        </Picker>
             </View>
             <ScrollView>
                 {productItems.map((item: INWProductsResponse) => (

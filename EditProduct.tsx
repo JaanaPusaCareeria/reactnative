@@ -3,6 +3,7 @@ import { Text, View, ScrollView, Image, Pressable, TouchableHighlight, Switch, P
 import { FontAwesome5, Octicons } from '@expo/vector-icons'; //iconit käyttöön!
 import styles from './styles/styles';
 
+
 interface INWProductsResponse {
     //Typescript -interface käytetään productItems -muuttujassa json
     productId: number;
