@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Text, View, ScrollView, Image, Pressable, Modal, TouchableHighlight } from 'react-native';
+import { Text, View, ScrollView, Image, Pressable, Modal, TouchableHighlight, ActivityIndicator } from 'react-native';
 import { FontAwesome5, Octicons } from '@expo/vector-icons'; //iconit käyttöön!
 import styles from './styles/styles';
 
 interface INWProductsResponse {
-    //Typescript -interface käytetään inventoryItems -muuttujassa json
+    //Typescript -interface käytetään productItems -muuttujassa json
     productId: number;
     productName: string;
     supplierId: number;
@@ -24,8 +24,8 @@ interface INWProductsResponse {
 export default function NWTuotteetListPop() {
     // tätä voidaan käyttää silmukassa, jossa mapataan tuotteet
     const [product, setProduct] = useState<Partial<INWProductsResponse>>({});
-    const [inventoryItems, setInventoryItems] = useState<any>([]);
-    const [inventoryItemsCount, setInventoryItemsCount] = useState(0);
+    const [productItems, setproductItems] = useState<any>([]);
+    const [productItemsCount, setproductItemsCount] = useState(0);
     const [ProductId, setProductId] = useState(0);
     const [productDetailsModal, setProductDetailsModal] = useState(false);
     // Modaalin kentät
@@ -55,9 +55,9 @@ export default function NWTuotteetListPop() {
         fetch(uri)
             .then(response => response.json())
             .then((json: INWProductsResponse) => {
-                setInventoryItems(json); //Tuotteet kirjoitetaan inventoryItems hgh-array muuttujaan.
+                setproductItems(json); //Tuotteet kirjoitetaan productItems hgh-array muuttujaan.
                 const fetchCount = Object.keys(json).length; //Lasketaan montako tuotenimikettä on yhteensä.
-                setInventoryItemsCount(fetchCount); //Kirjoitetaan tuotenimikkeiden määrä inventoryItemsCount -muuttujaan.
+                setproductItemsCount(fetchCount); //Kirjoitetaan tuotenimikkeiden määrä productItemsCount -muuttujaan.
             })
         // Eli kun haku on tehty, se laittaa falseksi kun ei tarvitse enää hakua tehdä
         setRefreshIndicator(false);
@@ -66,37 +66,6 @@ export default function NWTuotteetListPop() {
     function refreshJsonData() {
         setRefreshProducts(!refreshProducts);
         setRefreshIndicator(true);
-    }
-
-    //Jokaiselle komponentille random-key, palautetaan string -tyyppisenä
-    // sovellus herjaa, jos jokaisella ei ole yksilöllistä key-tietoa
-    function idGenerator() {
-        var rnds = function () {
-            return (((1 + Math.random()) * 0x10) | 0).toString(16).substring(1);
-        };
-        return (rnds() + rnds() + "-" + rnds() + "-" + rnds() + "-" + rnds() + "-" + rnds() + rnds() + rnds());
-    }
-
-    //Tuotetietojen näyttäminen
-    function showDetails(id: number, name: string, suppid: number, catid: number, quantityp: string, price: number, instock: number, onorder: number, reorderlvl: number, disco: boolean, imglnk: string, cat: any, supp: any ) {
-        //console.log(id + name + suppid + catid + quantityp + price + instock + onorder + reorderlvl + disco + imglnk)
-        setProductDetailsModal(true),
-        setProductId(id),
-        setProductName(name),
-        setSupplierId(suppid),
-        setCategoryId(catid),
-        setQuantityPerUnit(quantityp),
-        setUnitPrice(price),
-        setUnitsInStock(instock),
-        setUnitsOnOrder(onorder),
-        setReorderLevel(reorderlvl),
-        setDiscontinued(disco)
-        if (imglnk !== null) {
-            setImageLink(imglnk);
-        }
-        else {
-            setImageLink('');
-        }
     }
 
     //Modaali-ikkunan sulkeminen
@@ -110,44 +79,32 @@ export default function NWTuotteetListPop() {
                 <View>
                     <FontAwesome5 name="boxes" size={25} color="#000" />
                 </View>
-                <View style={[styles.centerSection, { height: 50 }]}>
-                    <Text style={{ fontSize: 18, color: '#000' }}>{'Tuotteita yhteensä: ' + inventoryItemsCount}</Text>
-                </View>
+                    <Text style={{ fontSize: 18, color: '#000' }}>{'Tuotteita yhteensä: ' + productItemsCount}</Text>
                 <Pressable onPress={() => refreshJsonData()} style={({ pressed }) => [{ backgroundColor: pressed ? 'lightgray' : 'white' }]} >
                     <View>
                         <Octicons name="sync" size={24} color="black" />
                     </View>
                 </Pressable>
+                <ActivityIndicator size="small" color="#0000ff" animating={refreshIndicator} />{/* ActivityIndicator aktivoituu refreshJsonData() -funktiossa ja se deaktivoidaan GetProducts() -funktiossa */}
             </View>
             <ScrollView>
-                {inventoryItems.map((item: INWProductsResponse) => (
+                {productItems.map((item: INWProductsResponse) => (
 
                     // kaikissa näissä pitää olla key määritetty, tai herjaa
                     // Jos määritellään yksilöllinen key (ei tarvi olla idGenerator) tälle ylimmän tason elementille, niin childeihin eli muille rivi 150-> ei tarvi sitä laittaa
+                    // Eli kun täällä käytetään keynä productId:tä, se riittää yksilöimään nämä tässä
                     <Pressable 
-                        key={idGenerator()} 
+                        key={item.productId} 
+                        // asetetaan setProductilla käsiteltävän itemin tiedot product-hooks-muuttujaan
                         onPress={() => {
-                            showDetails(
-                                item.productId,
-                                item.productName,
-                                item.supplierId,
-                                item.categoryId,
-                                item.quantityPerUnit,
-                                item.unitPrice,
-                                item.unitsInStock,
-                                item.unitsOnOrder,
-                                item.reorderLevel,
-                                item.discontinued,
-                                item.imageLink,
-                                item.category,
-                                item.supplier
-                            )
+                            setProduct(item)
+                            setProductDetailsModal(true)
                         }}
                         style={({ pressed }) => [{ backgroundColor: pressed ? 'rgba(49, 179, 192, 0.5)' : 'white' }]}
                     >
                         <View key={item.productId.toString()} style={styles.productsContainer}>
                             {/*Mikäli item.imageLink on undefined -> näytetään default -kuva, muuten item.imageLink*/}
-                            <Image source={item.imageLink ? { uri: item.imageLink } : { uri: 'https://www.tibs.org.tw/images/default.jpg' }} 
+                            <Image source={item.imageLink ? { uri: item.imageLink } : { uri: 'https://scontent.fqlf1-1.fna.fbcdn.net/v/t1.6435-9/174553569_10158502928428655_3102860319614201140_n.jpg?_nc_cat=104&ccb=1-3&_nc_sid=730e14&_nc_ohc=x5FRCk2MXy8AX8KVONq&_nc_ht=scontent.fqlf1-1.fna&oh=065f8e13b4536098e4b912b98a259deb&oe=60C47DA7' }} 
                                 style={[styles.centerSection, { height: 60, width: 60, backgroundColor: '#eeeeee', margin: 6, }]} />
                             <View style={{ flexGrow: 1, flexShrink: 1, alignSelf: 'center' }}>
                                 <Text style={{ fontSize: 15 }}>{item.productName}</Text>
@@ -170,49 +127,50 @@ export default function NWTuotteetListPop() {
                         <View style={styles.modalView}>
                         <Text style={styles.modalTitle}>Tuotteen tiedot</Text>
                             <View style={styles.modalInfo}>
+                                {/* näissä viitattava productiin, koska map-silmukassa asetettiin setProductiin itemin tiedot kokonaan */}
                                 <Text style={styles.modalTextTitle}>{'Product Id: '}</Text>
-                                <Text style={styles.modalText}>{ProductId}</Text>
+                                <Text style={styles.modalText}>{product.productId}</Text>
                             </View>
                             <View style={styles.modalInfo}>
                                 <Text style={styles.modalTextTitle}>{'Product Name: '}</Text>
-                                <Text style={styles.modalText}>{ProductName}</Text>
+                                <Text style={styles.modalText}>{product.productName}</Text>
                             </View>
                             <View style={styles.modalInfo}>
                                 <Text style={styles.modalTextTitle}>{'Supplier Id: '}</Text>
-                                <Text style={styles.modalText}>{SupplierId}</Text>
+                                <Text style={styles.modalText}>{product.supplierId}</Text>
                             </View>
                             <View style={styles.modalInfo}>
                                 <Text style={styles.modalTextTitle}>{'Category Id: '}</Text>
-                                <Text style={styles.modalText}>{CategoryId}</Text>
+                                <Text style={styles.modalText}>{product.categoryId}</Text>
                             </View>
                             <View style={styles.modalInfo}>
                                 <Text style={styles.modalTextTitle}>{'Quantity Per Unit: '}</Text>
-                                <Text style={styles.modalText}>{QuantityPerUnit}</Text>
+                                <Text style={styles.modalText}>{product.quantityPerUnit}</Text>
                             </View>
                             <View style={styles.modalInfo}>
                                 <Text style={styles.modalTextTitle}>{'Unit Price: '}</Text>
-                                <Text style={styles.modalText}>{UnitPrice}</Text>
+                                <Text style={styles.modalText}>{product.unitPrice}</Text>
                             </View>
                             <View style={styles.modalInfo}>
                                 <Text style={styles.modalTextTitle}>{'Units In Stock: '}</Text>
-                                <Text style={styles.modalText}>{UnitsInStock}</Text>
+                                <Text style={styles.modalText}>{product.unitsInStock}</Text>
                             </View>
                             <View style={styles.modalInfo}>
                                 <Text style={styles.modalTextTitle}>{'Units On Order: '}</Text>
-                                <Text style={styles.modalText}>{UnitsOnOrder}</Text>
+                                <Text style={styles.modalText}>{product.unitsOnOrder}</Text>
                             </View>
                             <View style={styles.modalInfo}>
                                 <Text style={styles.modalTextTitle}>{'Reorder Level: '}</Text>
-                                <Text style={styles.modalText}>{ReorderLevel}</Text>
+                                <Text style={styles.modalText}>{product.reorderLevel}</Text>
                             </View>
                             <View style={styles.modalInfo}>
                                 <Text style={styles.modalTextTitle}>{'Discontinued: '}</Text>
-                                <Text style={styles.modalText}>{Discontinued.toString()}</Text>
+                                <Text style={styles.modalText}>{product.discontinued ? product.discontinued.toString() : 'false'}</Text>
                             </View>
                             <View style={styles.modalInfo}>
                                 <Text style={styles.modalTextTitle}>{'Image: '}</Text>
                             </View>
-                            <Image source={ImageLink ? { uri: ImageLink } : { uri: 'https://www.tibs.org.tw/images/default.jpg' }} style={[styles.centerElement, { height: 60, width: 60, backgroundColor: '#eee', margin: 6, alignSelf: 'center' }]} />
+                            <Image source={ImageLink ? { uri: ImageLink } : { uri: 'https://scontent.fqlf1-1.fna.fbcdn.net/v/t1.6435-9/174553569_10158502928428655_3102860319614201140_n.jpg?_nc_cat=104&ccb=1-3&_nc_sid=730e14&_nc_ohc=x5FRCk2MXy8AX8KVONq&_nc_ht=scontent.fqlf1-1.fna&oh=065f8e13b4536098e4b912b98a259deb&oe=60C47DA7' }} style={[styles.centerElement, { height: 60, width: 60, backgroundColor: '#eee', margin: 6, alignSelf: 'center' }]} />
 
 
                             <TouchableHighlight

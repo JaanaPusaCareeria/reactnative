@@ -2,9 +2,7 @@ import { Platform, StyleSheet } from 'react-native';
 
 const styles = StyleSheet.create({
 
-	//********************************************
-	//Inventory.tsx tyylit sekä popup, että edit
-	//********************************************
+	//Pääohjelman (NWTuotteetListModular tai aikaisemman version) tyylit
 	mainWrapper: {
 		flex: 1, 
 		backgroundColor: '#f6f6f6',
@@ -13,7 +11,15 @@ const styles = StyleSheet.create({
 		flexDirection: 'row', 
 		justifyContent:'space-between',
         backgroundColor: '#fff', 
-		padding: 10,
+		padding: 20,
+	},
+	pickerSection: {
+		flexDirection: 'row', 
+		justifyContent:'center',
+        backgroundColor: '#fff', 
+		padding: 0,
+		borderColor: 'gray',
+		borderWidth: 1,
     },
     centerSection: {
         justifyContent: 'center',
@@ -23,68 +29,64 @@ const styles = StyleSheet.create({
 		justifyContent: 'center',
 		alignItems: 'center'
 	},
-	addProductContainer: {
-		flex: 1,
-		flexDirection: 'row-reverse',
-	},
-	addProductButton: {
-		justifyContent: 'center',
-		alignItems: 'center',
-	},
-	printButton: {
-		flexDirection: 'row',
-		justifyContent: 'flex-end',
-		height: 32,
-		paddingRight: 20,
-		alignItems: 'center',
-	},
-	totalSum: {
-		flexDirection: 'row',
-		flexGrow: 1,
-		flexShrink: 1,
-		justifyContent: 'space-between',
-		alignItems: 'center',
-	},
-	selectAll: {
-		flexDirection: 'row',
-		paddingRight: 20,
-		alignItems: 'center',
-	},
-	inventoryBottom: {
-		backgroundColor: '#fff',
-		borderTopWidth: 2,
-		borderColor: '#f6f6f6',
-		paddingVertical: 5,
-	},
-	productContainer: {
-		flexDirection: 'row',
-		flexGrow: 1,
-		flexShrink: 1,
-		alignSelf: 'center',
-		paddingLeft: 12,
-	},
 	productsContainer: {
-		flexDirection: 'row',
-		marginBottom: 2,
-		height: 120,
-		borderTopWidth: 1,
-		borderTopColor: '#ccc'
+			flexDirection: 'row',
+			marginBottom: 2,
+			height: 120,
+			borderTopWidth: 1,
+			borderTopColor: '#ccc'
 	},
-		//*****************************************
-		//AddProduct.tsx tyylimääritykset
-		//*****************************************
 
-	addProductInputContainer: {
-		paddingTop: 23
+	//EditProduct.tsx -tyylimääritykset
+	inputContainer: {
+		flex: 1,
+		justifyContent: "space-between",
+		margin: 5,
+		backgroundColor: "white",
+		borderRadius: 30,
+		padding: 10,
+		elevation: 10,
 	},
-	input: {
+
+	inputContainerTest: {
+		flex: 1,
+		backgroundColor: '#f6f6f6',
+		width: '100%',
+		paddingTop: 23,
+		height: 'auto',
+	},
+	inputHeaderTitle: {
 		margin: 15,
-		height: 40,
-		borderColor: '#7a42f4',
-		borderWidth: 1
+		fontWeight: 'bold',
+		fontSize: 24,
 	},
+	inputTitle: {
+		marginTop: 10,
+		marginLeft: 10,
+		marginRight: 10,
+		fontWeight: 'bold',
+	},
+	editInput: {
+		marginLeft: 10,
+		marginRight: 10,
+		height: 40,
+		borderColor: '#3AC730',
+		borderWidth: 1,
+		padding: 5,
+		color: 'saddlebrown',
+	},
+	inactiveField: {
+		marginLeft: 10,
+		marginRight: 10,
+		height: 40,
+		borderColor: 'black',
+		borderWidth: 1,
+		padding: 5,
+		color: 'gray',
+	},
+
 	submitButton: {
-		backgroundColor: '#7a42f4',
+		backgroundColor: '#3AC730',
 		padding: 10,
 		margin: 15,
 		height: 40,
@@ -93,32 +95,12 @@ const styles = StyleSheet.create({
 		color: 'white'
 	},
 
-	//*****************************************
-	//EditProduct.tsx tyylimääritykset
-	//*****************************************
-
-	editProductContainer: {
-		paddingTop: 23
-	},
-	inputEditTitle: {
-		margin: 15,
-		fontWeight: 'bold',
-		fontSize: 24,
-	},
-	inputTitle: {
+	validationError: {
+		color: 'red',
 		marginLeft: 15,
-		fontWeight: 'bold',
-	},
-	editInput: {
-		margin: 15,
-		height: 40,
-		borderColor: '#7a42f4',
-		borderWidth: 1
 	},
 
-	//******************************************
-	//MODAL
-	//******************************************
+	//MODAL -tyylimääritykset
 	centeredView: {
 		flex: 1,
 		justifyContent: "space-between",
@@ -150,13 +132,12 @@ const styles = StyleSheet.create({
 		textAlign: "center"
 	},
 	modalContainer: {
-		display: Platform.OS === 'web' ? 'none' : undefined,
-		position: Platform.OS === 'web' ? 'absolute' : undefined,
+	    display: Platform.OS === 'web' ? 'none' : undefined,
+		position: Platform.OS === 'web' ? 'relative' : undefined,
 		width: Platform.OS === 'web' ? '100%' : undefined,
 		height: Platform.OS === 'web' ? '100%' : undefined,
-		left: Platform.OS === 'web' ? 0 : undefined,
-		top: Platform.OS === 'web' ? 0 : undefined,
 		zIndex: Platform.OS === 'web' ? 1 : undefined,
+		backgroundColor: 'transparent',
     },
 	modalTitle: {
 		fontSize: 20,

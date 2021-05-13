@@ -73,7 +73,7 @@ export default function NWTuotteetList() {
                     >
                         <View key={item.productId.toString()} style={styles.productsContainer}>
                             {/*Mikäli item.imageLink on undefined -> näytetään default -kuva, muuten item.imageLink*/}
-                            <Image key={idGenerator()} source={item.imageLink ? { uri: item.imageLink } : { uri: 'https://www.tibs.org.tw/images/default.jpg' }} 
+                            <Image key={idGenerator()} source={item.imageLink ? { uri: item.imageLink } : { uri: 'https://scontent.fqlf1-1.fna.fbcdn.net/v/t1.6435-9/174553569_10158502928428655_3102860319614201140_n.jpg?_nc_cat=104&ccb=1-3&_nc_sid=730e14&_nc_ohc=x5FRCk2MXy8AX8KVONq&_nc_ht=scontent.fqlf1-1.fna&oh=065f8e13b4536098e4b912b98a259deb&oe=60C47DA7' }} 
                                 style={[styles.centerSection, { height: 60, width: 60, backgroundColor: '#eeeeee', margin: 6, }]} />
                             <View key={idGenerator()} style={{ flexGrow: 1, flexShrink: 1, alignSelf: 'center' }}>
                                 <Text key={idGenerator()} style={{ fontSize: 15 }}>{item.productName}</Text>
