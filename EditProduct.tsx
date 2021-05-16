@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Text, View, ScrollView, Image, Pressable, TouchableHighlight, Switch, Platform, TextInput } from 'react-native';
-import { FontAwesome5, Octicons } from '@expo/vector-icons'; //iconit käyttöön!
+import { Text, View, ScrollView, Pressable, Switch, Platform, TextInput } from 'react-native';
+import { Octicons } from '@expo/vector-icons'; //iconit käyttöön!
 import styles from './styles/styles';
+import {Picker} from '@react-native-picker/picker'
 
 
 interface INWProductsResponse {
@@ -22,6 +23,29 @@ interface INWProductsResponse {
     checked: any;
 }
 
+//pickeriin tuotekategorioille
+interface INWCategories {
+    //Typescript-interface
+    categoryId: number;
+    categoryName: string;
+    description: string;
+    picture: string;
+}
+
+interface INWSuppliers {
+    supplierId: number;
+    companyName: string;
+    contactName: string;
+    contactTitle: string;
+    address: string;
+    city: string;
+    region: number;
+    postalCode: string;
+    country: string;
+    phone: string;
+    fax: string;
+    homePage: string;
+}
 
 const ProductEdit = (props: { passProductId: any, closeModal: any, refreshAfterEdit: any }) => {
     let ProductId = props.passProductId; //propsi, jonka kutsuva ohjelma asettaa tälle komponentille
@@ -35,10 +59,19 @@ const ProductEdit = (props: { passProductId: any, closeModal: any, refreshAfterE
     const [ReorderLevel, setReorderLevel] = useState('0');
     const [Discontinued, setDiscontinued] = useState(false)
     const [ImageLink, setImageLink] = useState('0');
+    const [categories, setCategories] = useState<any>([]);
+    const [suppliers, setSuppliers] = useState<any>([]);
+    // const [selectedCat, setSelectedCat] = useState<any>();
+    const [currentCategory, setCurrentCategory] = useState<any>();
+    const [currentSupplier, setCurrentSupplier] = useState<any>();
+
+
     //HOX validaatio -jos ei mene läpi, tallenna-painike ei ole aktiivinen
     let validaatio = false;
 
     useEffect(() => {
+        GetCategories();
+        GetSuppliers();
         GetProductData();
     }, [props.passProductId]); //aina, kun productId muuttuu, päivitetään useEffect
 
@@ -49,8 +82,9 @@ const ProductEdit = (props: { passProductId: any, closeModal: any, refreshAfterE
             .then(response => response.json())
             .then((json: INWProductsResponse) => {
                 setProductName(json.productName);
-                setSupplierId(json.supplierId.toString());
-                setCategoryId(json.categoryId.toString());
+                // asetetaan kategorian ja supplierin nykyiset tiedot currentCategory- ja CurrentSupplier-muuttujiin, jotta saadaan ne pickerin arvoksi
+                setCurrentCategory(json.categoryId);
+                setCurrentSupplier(json.supplierId);
                 setQuantityPerUnit(json.quantityPerUnit);
                 setUnitPrice(json.unitPrice.toString());
                 setUnitsInStock(json.unitsInStock.toString());
@@ -60,6 +94,36 @@ const ProductEdit = (props: { passProductId: any, closeModal: any, refreshAfterE
                 setImageLink(json.imageLink);
             })
     }
+
+    function GetCategories() {
+        let uri = 'https://northwindwebapi2021.azurewebsites.net/northwind/product/getcat';
+        fetch(uri)
+            .then(response => response.json())
+            .then((json: INWCategories) => {
+                setCategories(json);
+                })
+        }
+
+    function GetSuppliers() {
+        let uri = 'https://northwindwebapi2021.azurewebsites.net/northwind/product/getsupplier';
+        fetch(uri)
+            .then(response => response.json())
+            .then((json: INWSuppliers) => {
+                setSuppliers(json);
+                })
+        }
+
+    const categoriesList = categories.map((cat: INWCategories, index: any) => {
+        return (
+            <Picker.Item label={cat.categoryId.toString() + '   -   ' + cat.categoryName} value={cat.categoryId} key={index} />
+        )
+    });
+
+    const supplierList = suppliers.map((supplier: INWSuppliers, index: any) => {
+        return (
+            <Picker.Item label={supplier.supplierId.toString() + '   -   ' + supplier.companyName} value={supplier.supplierId} key={index} />
+        )
+    });
 
     //tuotteen muokkaus, saa parametrinä productNamen. Se tarkistaa, onko menossa nettisivuille (web) vai ei (jolloin oletetaan että se on android)
     //validaatio käsitellään myöhemmin. Jos se menee pieleen, tulee alert että ei voida tallentaa.
@@ -124,8 +188,6 @@ const ProductEdit = (props: { passProductId: any, closeModal: any, refreshAfterE
                 }
             });
     } //putTODB päättyy
-
-
 
     //Sulje details-modaali
     function closeModal() {
@@ -236,16 +298,17 @@ const ProductEdit = (props: { passProductId: any, closeModal: any, refreshAfterE
                     />
 
                     <Text style={styles.inputTitle}>Kategoria:</Text>
-                    <TextInput style={styles.editInput}
-                        underlineColorAndroid="transparent"
-                        onChangeText={val => setCategoryId(val)}
-                        value={CategoryId.toString()}
-                        placeholderTextColor="#9a73ef"
-                        autoCapitalize="none"
-                        keyboardType='numeric'
-                        selectTextOnFocus={true}
-                    />
-
+                        <Picker
+                            prompt='Valitse tuoteryhmä'
+                            // Haetaan nykyinen tuoteryhmä pickerin oletusarvoksi
+                            selectedValue={currentCategory}
+                            // style={{ height: 50, width: 250 }}
+                            style={styles.editPicker}
+                            onValueChange={(value) => setCategoryId(value)}
+                        >
+                        {categoriesList}
+                        </Picker>
+                    
                     <Text style={styles.inputTitle}>Pakkauksen koko:</Text>
                     <TextInput style={styles.editInput}
                         underlineColorAndroid="transparent"
@@ -256,17 +319,15 @@ const ProductEdit = (props: { passProductId: any, closeModal: any, refreshAfterE
                         keyboardType='numeric'
                         selectTextOnFocus={true}
                     />
-
                     <Text style={styles.inputTitle}>Tavarantoimittaja:</Text>
-                    <TextInput style={styles.editInput}
-                        underlineColorAndroid="transparent"
-                        onChangeText={val => setSupplierId(val)}
-                        value={SupplierId.toString()}
-                        placeholderTextColor="#9a73ef"
-                        autoCapitalize="none"
-                        keyboardType='numeric'
-                        selectTextOnFocus={true}
-                    />
+                        <Picker
+                            prompt='Valitse toimittaja'
+                            selectedValue={currentSupplier}
+                            style={styles.editPicker}
+                            onValueChange={(value) => setSupplierId(value)}
+                        >
+                        {supplierList}
+                        </Picker>
 
                     <Text style={styles.inputTitle}>Tuote poistunut:</Text>
                     <View style={{ flexDirection: 'row', marginLeft: 15, }}>

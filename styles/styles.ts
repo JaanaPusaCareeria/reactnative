@@ -75,6 +75,18 @@ const styles = StyleSheet.create({
 		padding: 5,
 		color: 'saddlebrown',
 	},
+
+	editPicker: {
+		marginLeft: 10,
+		marginRight: 10,
+		height: 40,
+		borderColor: '#3AC730',
+		borderWidth: 1,
+		padding: 5,
+		color: 'saddlebrown',
+
+	},
+
 	inactiveField: {
 		marginLeft: 10,
 		marginRight: 10,

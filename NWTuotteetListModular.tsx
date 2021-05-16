@@ -130,7 +130,7 @@ export default function NWTuotteetListModular() {
 
     const categoriesList = categories.map((cat: INWCategories, index: any) => {
         return (
-            <Picker.Item label={cat.categoryName} value={cat.categoryId} key={index} />
+            <Picker.Item label={cat.categoryId.toString() + '   -   ' + cat.categoryName} value={cat.categoryId} key={index} />
         )
     });
 
@@ -139,17 +139,6 @@ export default function NWTuotteetListModular() {
     function fetchFiltered(value: any) {
         setSelectedCat(value);
         setRefreshProducts(!refreshProducts);
-    }
-
-    //dropdownin funktio suodattamiseen
-    function filterItems(category: string) {
-        if (category === 'All') {
-            setDropdownCategory('All');
-            setRefreshProducts(!refreshProducts);
-        } else if (category === 'cat1') {
-            setDropdownCategory('cat1');
-            setRefreshProducts(!refreshProducts);
-        }
     }
 
     return (

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Text, View, ScrollView, Image, Pressable, TouchableHighlight, Switch, Platform, TextInput } from 'react-native';
 import { FontAwesome5, Octicons } from '@expo/vector-icons'; //iconit käyttöön!
 import styles from './styles/styles';
-
+import {Picker} from '@react-native-picker/picker'
 
 interface INWProductsResponse {
     //Typescript -interface käytetään productItems -muuttujassa json
@@ -22,6 +22,28 @@ interface INWProductsResponse {
     checked: any;
 }
 
+interface INWCategories {
+    categoryId: number;
+    categoryName: string;
+    description: string;
+    picture: string;
+}
+
+interface INWSuppliers {
+    supplierId: number;
+    companyName: string;
+    contactName: string;
+    contactTitle: string;
+    address: string;
+    city: string;
+    region: number;
+    postalCode: string;
+    country: string;
+    phone: string;
+    fax: string;
+    homePage: string;
+}
+
 
 const CreateProduct = (props: { closeModal: any, refreshAfterEdit: any }) => {
     const [ProductName, setProductName] = useState('...'); // kolme pistettä on alkuarvo, jota näytetään näyttöä ladattaessa ja sitten kun tiedot on ladattu, näkyy oikea asia
@@ -34,8 +56,45 @@ const CreateProduct = (props: { closeModal: any, refreshAfterEdit: any }) => {
     const [ReorderLevel, setReorderLevel] = useState('0');
     const [Discontinued, setDiscontinued] = useState(false)
     const [ImageLink, setImageLink] = useState('0');
+    const [categories, setCategories] = useState<any>([]);
+    const [suppliers, setSuppliers] = useState<any>([]);
     //HOX validaatio -jos ei mene läpi, tallenna-painike ei ole aktiivinen
     let validaatio = false;
+
+    useEffect(() => {
+        GetCategories();
+        GetSuppliers();
+    }, []);
+
+    function GetCategories() {
+        let uri = 'https://northwindwebapi2021.azurewebsites.net/northwind/product/getcat';
+        fetch(uri)
+            .then(response => response.json())
+            .then((json: INWCategories) => {
+                setCategories(json);
+                })
+        }
+
+    function GetSuppliers() {
+        let uri = 'https://northwindwebapi2021.azurewebsites.net/northwind/product/getsupplier';
+        fetch(uri)
+            .then(response => response.json())
+            .then((json: INWSuppliers) => {
+                setSuppliers(json);
+                })
+        }
+
+    const categoriesList = categories.map((cat: INWCategories, index: any) => {
+        return (
+            <Picker.Item label={cat.categoryId.toString() + '   -   ' + cat.categoryName} value={cat.categoryId} key={index} />
+        )
+    });
+
+    const supplierList = suppliers.map((supplier: INWSuppliers, index: any) => {
+        return (
+            <Picker.Item label={supplier.supplierId.toString() + '   -   ' + supplier.companyName} value={supplier.supplierId} key={index} />
+        )
+    });
 
     //tuotteen lisäys, saa parametrinä productNamen. Se tarkistaa, onko menossa nettisivuille (web) vai ei (jolloin oletetaan että se on android)
     //jos se onnistuu, kutsutaan PostToDB-funktiota await -lisämääreellä, kerrotaan että muokkaus on onnistunut
@@ -189,23 +248,23 @@ const CreateProduct = (props: { closeModal: any, refreshAfterEdit: any }) => {
 
                     <Text style={styles.inputTitle}>Tilauksessa:</Text>
                     <TextInput style={styles.editInput}
-                        underlineColorAndroid="transparent"
+                        underlineColorAndroid="transparent" 
                         onChangeText={val => setUnitsOnOrder(val)}
                         placeholderTextColor="#9a73ef"
                         autoCapitalize="none"
                         keyboardType='numeric'
                         selectTextOnFocus={true}
                     />
-
                     <Text style={styles.inputTitle}>Kategoria:</Text>
-                    <TextInput style={styles.editInput}
-                        underlineColorAndroid="transparent"
-                        onChangeText={val => setCategoryId(val)}
-                        placeholderTextColor="#9a73ef"
-                        autoCapitalize="none"
-                        keyboardType='numeric'
-                        selectTextOnFocus={true}
-                    />
+                        <Picker
+                            prompt='Valitse tuoteryhmä'
+                            selectedValue={CategoryId}
+                            // style={{ height: 50, width: 250 }}
+                            style={styles.editInput}
+                            onValueChange={(value) => setCategoryId(value)}
+                        >
+                        {categoriesList}
+                        </Picker>
 
                     <Text style={styles.inputTitle}>Pakkauksen koko:</Text>
                     <TextInput style={styles.editInput}
@@ -218,14 +277,15 @@ const CreateProduct = (props: { closeModal: any, refreshAfterEdit: any }) => {
                     />
 
                     <Text style={styles.inputTitle}>Tavarantoimittaja:</Text>
-                    <TextInput style={styles.editInput}
-                        underlineColorAndroid="transparent"
-                        onChangeText={val => setSupplierId(val)}
-                        placeholderTextColor="#9a73ef"
-                        autoCapitalize="none"
-                        keyboardType='numeric'
-                        selectTextOnFocus={true}
-                    />
+                        <Picker
+                            prompt='Valitse toimittaja'
+                            selectedValue={SupplierId}
+                            // style={{ height: 50, width: 250 }}
+                            style={{ height: 50, width: 200 }}
+                            onValueChange={(value) => setSupplierId(value)}
+                        >
+                        {supplierList}
+                        </Picker>
 
                     <Text style={styles.inputTitle}>Tuote poistunut:</Text>
                     <View style={{ flexDirection: 'row', marginLeft: 15, }}>
