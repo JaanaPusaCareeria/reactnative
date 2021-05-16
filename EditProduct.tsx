@@ -65,10 +65,6 @@ const ProductEdit = (props: { passProductId: any, closeModal: any, refreshAfterE
     const [currentCategory, setCurrentCategory] = useState<any>();
     const [currentSupplier, setCurrentSupplier] = useState<any>();
 
-
-    //HOX validaatio -jos ei mene läpi, tallenna-painike ei ole aktiivinen
-    let validaatio = false;
-
     useEffect(() => {
         GetCategories();
         GetSuppliers();
