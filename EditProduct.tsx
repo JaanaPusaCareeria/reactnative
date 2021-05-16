@@ -131,8 +131,7 @@ const ProductEdit = (props: { passProductId: any, closeModal: any, refreshAfterE
     //ja sitten tulee refreshAfterEdit, joka asetetaan trueksi ja kutsuva ohjelma saa siitä tiedon.
     async function editProductOnPress(productName: string) {
         if (Platform.OS === 'web') {
-            if (validaatio == false) {
-                alert('Tuotetta ' + productName + ' ei voi tallentaa tietojen puutteellisuuden vuoksi');
+            if (validateOnSubmit() == false) {
             } else {
                 await PutToDB();
                 console.log ('Tuotetta ' + productName + ' muokattu onnistuneesti');
@@ -140,8 +139,7 @@ const ProductEdit = (props: { passProductId: any, closeModal: any, refreshAfterE
                 closeModal();
             }
         } else {
-            if (validaatio == false) {
-                alert('Tuotetta ' + productName + ' ei voi tallentaa tietojen puutteellisuuden vuoksi');
+            if (validateOnSubmit() == false) {
             } else {
                 await PutToDB();
                 console.log ('Tuotetta ' + productName + ' muokattu onnistuneesti');
@@ -194,15 +192,101 @@ const ProductEdit = (props: { passProductId: any, closeModal: any, refreshAfterE
         props.closeModal(true)
     }
 
-    //validointi
-    function priceValidation(price: string, field: string) {
-        //alert(price);
-        //alert(typeof(price));
-        if ((price == '') || (price === null) || (price.indexOf(',') > 0)) {
-            validaatio = false;
+     // URL validaatio, käy myös tyhjä. Jos kirjoitusta, niin pitää olla oikean muotoista
+     function validateUrl(val: any) {
+        if (val === null) {
+            return true;
+        }
+        else {
+            var rgx = /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=_%.]+(?:png|jpg|jpeg|gif|svg)+$/;
+            if (val.match(rgx)) {
+                return true;
+            }
+            if (val == '') {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+    }
+
+    // Hinnan validaatio
+    function validatePrice(val: any) {
+        if (val === null) {
+            return true;
+        }
+        else {
+            var rgx = /^[0-9]*\.?[0-9]*$/;
+            if (String(val).match(rgx) == null) {
+                return false;
+            }
+            else {
+                return true;
+            }
+        }
+    }
+
+    // Merkkijonon validaation (MAX 70 merkkiä)
+    function validateString(val: any) {
+        if (val === "") {
+            return false;
+        }
+        else {
+                var rgx = /^.{1,70}$/;
+            if (val.match(rgx) == null) {
+                    return false;
+                }
+                else {
+                    return true;
+                }
+        }
+    }
+
+    // Numero -validaatio (ensimmäinen numero ei voi olla 0, jos on enemmän numeroita kuin 1)
+    function validateNumeric(val: any) {
+        if (val === null) {
+            return true;
+        }
+        else {
+            var rgx = /^[1-9][0-9]*$/;
+            if (String(val).match(rgx)) {
+                return true;
+            }
+            if (val == '0') {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+    }
+    // Funktio tarkistaa, meneekö validointi pieleen ja antaa alertin sen mukaan, mikä kohta ollaan validoimassa
+    // Jos mikään validoinneista ei mene pieleen, se palauttaa truen. editProductOnPress ei tarvitse omaa alertia, koska
+    // se tulee jo tästä. HUOM Jos joku aiemmista validoinneista menee pieleen, se ei loppuja else iffejä käsittele
+    function validateOnSubmit() {
+        if (!validateString(ProductName)) {
+            alert("Tarkista tuotteen nimi!");
+            return false;
+        } else if (!validatePrice(UnitPrice)) {
+            alert("Tarkista tuotteen hinta!");
+            return false;
+        } else if (!validateNumeric(UnitsInStock)) {
+            alert("Tarkista tuotteen varastomäärä");
+            return false;
+        } else if (!validateNumeric(ReorderLevel)) {
+            alert("Tarkista tuotteen hälytysraja!");
+            return false;
+        } else if (!validateNumeric(UnitsOnOrder)) {
+            alert("Tarkista tuotteen tilauksessa oleva määrä!");
+            return false;
+        } else if (!validateString(QuantityPerUnit)) {
+            alert("Tarkista tuotteen pakkauksen koko!");
+            return false;
+        } else if (!validateUrl(ImageLink)) {
+            alert("Tarkista kuvalinkki!");
             return false;
         } else {
-            validaatio = true;
             return true;
         }
     }
@@ -248,7 +332,8 @@ const ProductEdit = (props: { passProductId: any, closeModal: any, refreshAfterE
                         // uutta nimeä
                         selectTextOnFocus={true}  
                     />
-                    { ProductName ? null: ( <Text style={styles.validationError}>Anna tuotteen nimi</Text>)}
+                    {/* { ProductName ? null: ( <Text style={styles.validationError}>Anna tuotteen nimi</Text>)} */}
+                    { validateString(ProductName) == true ? null : ( <Text style={styles.validationError}>Anna tuotteen nimi!</Text> )}
 
                     <Text style={styles.inputTitle}>Hinta:</Text>
                     <TextInput style={styles.editInput}
@@ -262,7 +347,8 @@ const ProductEdit = (props: { passProductId: any, closeModal: any, refreshAfterE
                         keyboardType='numeric'
                         selectTextOnFocus={true}
                     />
-                    { priceValidation(UnitPrice, 'UnitPrice') == true ? null : ( <Text style={styles.validationError}>Anna hinta muodossa n.zz!</Text>)}
+                    {/* { priceValidation(UnitPrice, 'UnitPrice') == true ? null : ( <Text style={styles.validationError}>Anna hinta muodossa n.zz!</Text> )} */}
+                    { validatePrice(UnitPrice) == true ? null : ( <Text style={styles.validationError}>Anna hinta muodossa n.zz!</Text> )}
                     
                     <Text style={styles.inputTitle}>Varastossa:</Text>
                     <TextInput style={styles.editInput}
@@ -274,7 +360,8 @@ const ProductEdit = (props: { passProductId: any, closeModal: any, refreshAfterE
                         keyboardType='numeric'
                         selectTextOnFocus={true}
                     />
-   
+                    { validateNumeric(UnitsInStock) == true ? null : ( <Text style={styles.validationError}>Anna varastomääräksi numero</Text> )}
+
                     <Text style={styles.inputTitle}>Hälytysraja:</Text>
                     <TextInput style={styles.editInput}
                         underlineColorAndroid="transparent"
@@ -349,6 +436,7 @@ const ProductEdit = (props: { passProductId: any, closeModal: any, refreshAfterE
                         autoCapitalize="none"
                         selectTextOnFocus={true}
                     />
+                    { validateUrl(ImageLink) == true ? null : ( <Text style={styles.validationError}>Tarkista syöttämäsi URI</Text> )}
                     
                 </View>
             </ScrollView>
