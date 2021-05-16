@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Text, View, ScrollView, Image, Pressable, Modal, TouchableHighlight, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { FontAwesome5, Octicons } from '@expo/vector-icons'; //iconit käyttöön!
+import {Picker} from '@react-native-picker/picker' //picker on dropdown-valikko
 import styles from './styles/styles';
 import ProductDetails from './ProductDetails'
 import ProductEdit from './EditProduct'
-import {Picker} from '@react-native-picker/picker' //picker on dropdown-valikko
+import CreateProduct from './CreateProduct'
+import DeleteProduct from './DeteleProduct'
 
 interface INWProductsResponse {
     //Typescript -interface käytetään productItems -muuttujassa json
@@ -24,6 +26,15 @@ interface INWProductsResponse {
     checked: any;
 }
 
+//pickeriin tuotekategorioille
+interface INWCategories {
+    //Typescript-interface
+    categoryId: number;
+    categoryName: string;
+    description: string;
+    picture: string;
+}
+
 export default function NWTuotteetListModular() {
     // tätä voidaan käyttää silmukassa, jossa mapataan tuotteet
     const [product, setProduct] = useState<Partial<INWProductsResponse>>({});
@@ -32,15 +43,20 @@ export default function NWTuotteetListModular() {
     const [ProductId, setProductId] = useState(0);
     const [productDetailsModal, setProductDetailsModal] = useState(false);
     const [productEditModal, setProductEditModal] = useState(false);
+    const [productCreateModal, setProductCreateModal] = useState(false);
+    const [productDeleteModal, setProductDeleteModal] = useState(false);
     {/*Tuotelistan päivityksen muuttujat*/ }
     const [refreshProducts, setRefreshProducts] = useState(false);
     const [refreshIndicator, setRefreshIndicator] = useState(false);
     //Pickerin muuttuja
     const [dropdownCategory, setDropdownCategory] = useState('All');
+    const [categories, setCategories] = useState<any>([]);
+    const [selectedCat, setSelectedCat] = useState<any>("All");
 
     // Kun pressablea painamalla refreshProductsin tila muuttuu trueksi, kun tämä state muuttuu, tämä useEffect laukeaa jolloin se kutsuu GetProductsia
     // joka hakee tuotteet ja asettaa refreshProductsin falseksi.
     useEffect(() => {
+        GetCategories();
         GetProducts();
     }, [refreshProducts]);
 
@@ -48,14 +64,31 @@ export default function NWTuotteetListModular() {
         let uri = 'https://northwindwebapi2021.azurewebsites.net/northwind/product';
         fetch(uri)
             .then(response => response.json())
-            .then((json: INWProductsResponse) => {
-                setproductItems(json); //Tuotteet kirjoitetaan productItems hgh-array muuttujaan.
-                const fetchCount = Object.keys(json).length; //Lasketaan montako tuotenimikettä on yhteensä.
-                setproductItemsCount(fetchCount); //Kirjoitetaan tuotenimikkeiden määrä productItemsCount -muuttujaan.
+            .then((json: INWProductsResponse[]) => {
+                if (selectedCat === "All") {
+                    setproductItems(json); //Tuotteet kirjoitetaan productItems hooks-array muuttujaan.
+                    const fetchCount = Object.keys(json).length; //Lasketaan montako tuotenimikettä on yhteensä.
+                    setproductItemsCount(fetchCount); //Kirjoitetaan tuotenimikkeiden määrä productItemsCount -muuttujaan.
+                } else {
+                    const filtered = json.filter(x => x.categoryId === parseInt(selectedCat)); //dropdownin categoryid:n omaavat tuotteet
+                    setproductItems(filtered);
+                    const fetchCount = Object.keys(filtered).length; //Lasketaan montako tuotenimikettä on yhteensä.
+                    setproductItemsCount(fetchCount); //Kirjoitetaan tuotenimikkeiden määrä productItemsCount -muuttujaan. 
+                }
             })
         // Eli kun haku on tehty, se laittaa falseksi kun ei tarvitse enää hakua tehdä
         setRefreshIndicator(false);
     }
+
+    function GetCategories() {
+        let uri = 'https://northwindwebapi2021.azurewebsites.net/northwind/product/getcat';
+        fetch(uri)
+            .then(response => response.json())
+            .then((json: INWCategories) => {
+                setCategories(json);
+                })
+            setRefreshIndicator(false);
+        }
 
     function refreshJsonData() {
         setRefreshProducts(!refreshProducts);
@@ -68,6 +101,16 @@ export default function NWTuotteetListModular() {
         setProductEditModal(true); //Näytetään edit-ikkuna
     }
 
+    function createProductFunc() {
+        setProductCreateModal(true); //näytetään create-ikkuna
+    }
+
+    //Tuotteen poisto
+    function deleteProductFunc(item: INWProductsResponse) {
+        setProduct(item);
+        setProductDeleteModal(true);
+    }
+
     //Modaali-ikkunan sulkeminen
     function closeDetailsModal() {
         setProductDetailsModal(!productDetailsModal);
@@ -75,6 +118,27 @@ export default function NWTuotteetListModular() {
 
     function closeEditModal() {
         setProductEditModal(!productEditModal);
+    }
+
+    function closeCreateModal() {
+        setProductCreateModal(!productCreateModal)
+    }
+
+    function closeDeleteModal() {
+        setProductDeleteModal(!productDeleteModal)
+    }
+
+    const categoriesList = categories.map((cat: INWCategories, index: any) => {
+        return (
+            <Picker.Item label={cat.categoryName} value={cat.categoryId} key={index} />
+        )
+    });
+
+    // Tätä kutsutaan kun pickerissä tehdään valinta. Se ottaa parametriksi valitun arvon ja asettaa sen selectedCat -hooks-muuttujaan ja 
+    // sitten asettaa setRefreshProductsiin arvot.
+    function fetchFiltered(value: any) {
+        setSelectedCat(value);
+        setRefreshProducts(!refreshProducts);
     }
 
     //dropdownin funktio suodattamiseen
@@ -87,7 +151,6 @@ export default function NWTuotteetListModular() {
             setRefreshProducts(!refreshProducts);
         }
     }
-
 
     return (
         <View style={[ styles.mainWrapper ]}>
@@ -102,23 +165,27 @@ export default function NWTuotteetListModular() {
                     </View>
                 </Pressable>
                 <ActivityIndicator size="small" color="#0000ff" animating={refreshIndicator} />{/* ActivityIndicator aktivoituu refreshJsonData() -funktiossa ja se deaktivoidaan GetProducts() -funktiossa */}
+                {/* Create - lisää uusi -painike */}
+                <Pressable onPress={() => createProductFunc()}>
+                    <View>
+                        <Octicons name="plus" size={24} color="green" />
+                    </View>
+                </Pressable>
             </View>
             {/* Picker-dropdown ylämenuun */}
             <View style={[styles.pickerSection]}>
                         <Picker
-                            selectedValue={dropdownCategory}
+                            prompt='Valitse tuoteryhmä'
+                            selectedValue={selectedCat}
                             style={{ height: 50, width: 250 }}
-                                prompt='Valitse tuoteryhmä'
-                                onValueChange={(itemValue, itemIndex) =>
-                                filterItems(itemValue.toString())
-                            }>
+                            onValueChange={(value) => fetchFiltered(value)}
+                        >
                             <Picker.Item label="Hae kaikki tuoteryhmät" value="All" />
-                            <Picker.Item label="Juomat" value="cat1" />
+                            {categoriesList}
                         </Picker>
             </View>
             <ScrollView>
                 {productItems.map((item: INWProductsResponse) => (
-
                     // kaikissa näissä pitää olla key määritetty, tai herjaa
                     // Jos määritellään yksilöllinen key (ei tarvi olla idGenerator) tälle ylimmän tason elementille, niin childeihin eli muille rivi 150-> ei tarvi sitä laittaa
                     // Eli kun täällä käytetään keynä productId:tä, se riittää yksilöimään nämä tässä
@@ -145,6 +212,9 @@ export default function NWTuotteetListModular() {
                                 <TouchableOpacity style={[{ width: 32, height: 32 }]} onPress={() => editProductFunc(item)}>
                                     <Octicons name="pencil" size={24} color="black" />
                                 </TouchableOpacity>
+                                <TouchableOpacity style={[{ width: 32, height: 32 }]} onPress={() => deleteProductFunc(item)}>
+                                    <Octicons name="trashcan" size={24} color="black" />
+                                </TouchableOpacity>
                             </View>
                         </View>
                     </Pressable>
@@ -167,12 +237,34 @@ export default function NWTuotteetListModular() {
                 { productEditModal ? (
                     <Modal 
                     style={[styles.modalContainer]}
-                        animationType="none"
+                        animationType="fade"
                         transparent={true}
                         visible={true}>
                             <ProductEdit closeModal={closeEditModal} refreshAfterEdit={refreshJsonData} passProductId={product.productId} />
                         </Modal>
                 ) : null }
+
+                {/* Create-product -komponentti */}
+                { productCreateModal ? (
+                    <Modal style={[styles.modalContainer]}
+                        animationType="none"
+                        transparent={true}
+                        visible={true}
+                    >
+                        <CreateProduct closeModal={closeCreateModal} refreshAfterEdit={refreshJsonData} />
+                    </Modal>
+                ) : null }
+
+                { productDeleteModal ? (
+                    <Modal 
+                    style={[styles.modalContainer]}
+                        animationType="slide"
+                        transparent={true}
+                        visible={true}>
+                            <DeleteProduct closeModal={closeDeleteModal} refreshAfterEdit={refreshJsonData} passProductId={product.productId} />
+                        </Modal>
+                ) : null }
+
             </ScrollView>
         </View>
     );
